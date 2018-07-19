@@ -39,7 +39,7 @@
 
 - name: copy jupyterhub sudospawner sudo config
   copy: src=sudo_jupyter dest=/etc/sudoers.d/jupyter mode=0440 owner=root group=root
-  when: 
+  when:
   become: yes
   become_method: sudo
   tags: jupyter
@@ -86,19 +86,19 @@
   tags: jupyter
 
 - name: set IP address
-  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.hub_ip = '{{ansible_eno1.ipv4.address}}'"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.hub_ip = '{{jupyter_ipv4_address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set IP address
-  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.ip = '{{ansible_eno1.ipv4.address}}'"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.ip = '{{jupyter_ipv4_address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set IP address
-  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.proxy_api_ip = '{{ansible_eno1.ipv4.address}}'"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.proxy_api_ip = '{{jupyter_ipv4_address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
@@ -128,7 +128,7 @@
   become: yes
   become_method: sudo
   tags: jupyter
-  
+
 - name: Check to see if certificate exists
   stat:
     path: "{{jupyter_tls_cert}}"
@@ -136,7 +136,7 @@
   tags: jupyter
 
 - name: create self-signed SSL cert
-  when: 
+  when:
     - nossl == False
     - cert_exists.stat.exists == False
   command: openssl req -new -nodes -x509 -subj "/C={{ssl_country}}/ST={{ssl_state}}/L={{ssl_city}}/O={{ssl_org}}/CN=${ansible_fqdn}" -days 3650 -keyout "{{jupyter_tls_key}}" -out "{{jupyter_tls_cert}}" -extensions v3_ca#
