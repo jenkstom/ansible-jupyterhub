@@ -26,8 +26,13 @@
   become_method: sudo
   tags: jupyter
 
-- name: create jupyterhub folder in etc
-  file: path=/etc/jupyterhub state=directory mode=0755 owner=jupyter group=jupyter
+- name: create jupyterhub config folder
+  file:
+    path: "{{jupyter_config_dir}}"
+    state: directory
+    mode: 0755
+    owner: jupyter
+    group: jupyter
   become: yes
   become_method: sudo
   tags: jupyter
@@ -52,45 +57,48 @@
   tags: jupyter
 
 - name: Check to see if config file exists
-  stat: path=/etc/jupyterhub/jupyterhub_config.py
+  stat:
+    path: "{{jupyter_config_file}}"
   register: config_exists
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: configure jupyterhub
-  command: /usr/local/bin/jupyterhub --generate-config chdir=/etc/jupyterhub/ creates=/etc/jupyterhub/jupyterhub_config.py
+  command: /usr/local/bin/jupyterhub --generate-config chdir="{{jupyter_config_dir}}"
+  args:
+    creates: "{{jupyter_config_file}}"
   when: config_exists.stat.exists == False
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set jupyterhub admin user
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.Authenticator.admin_users = {'jupyter'}"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.Authenticator.admin_users = {'jupyter'}"
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set jupyterhub create users
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.LocalAuthenticator.create_system_users = True"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.LocalAuthenticator.create_system_users = True"
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set IP address
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.hub_ip = '{{ansible_eno1.ipv4.address}}'"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.hub_ip = '{{ansible_eno1.ipv4.address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set IP address
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ip = '{{ansible_eno1.ipv4.address}}'"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.ip = '{{ansible_eno1.ipv4.address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
 
 - name: set IP address
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.proxy_api_ip = '{{ansible_eno1.ipv4.address}}'"
+  lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.proxy_api_ip = '{{ansible_eno1.ipv4.address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
@@ -114,38 +122,49 @@
   tags: jupyter
 
 - name: Ensure hostname is in /etc/hosts file
-  lineinfile: dest=/etc/hosts regexp="{{ansible_hostname}}" line="{{ansible_default_ipv4.address}}  {{ansible_hostname}}"
+  lineinfile:
+    dest: /etc/hosts regexp="{{ansible_hostname}}"
+    line: "{{ansible_default_ipv4.address}}  {{ansible_hostname}}"
   become: yes
   become_method: sudo
   tags: jupyter
   
 - name: Check to see if certificate exists
-  stat: path=/etc/jupyterhub/server.key
+  stat:
+    path: "{{jupyter_tls_cert}}"
   register: cert_exists
   tags: jupyter
 
 - name: create self-signed SSL cert
-  command: openssl req -new -nodes -x509 -subj "/C={{ssl_country}}/ST={{ssl_state}}/L={{ssl_city}}/O={{ssl_org}}/CN=${ansible_fqdn}" -days 3650 -keyout /etc/jupyterhub/server.key -out /etc/jupyterhub/server.crt -extensions v3_ca creates=/etc/jupyterhub/server.crt
   when: 
     - nossl == False
     - cert_exists.stat.exists == False
+  command: openssl req -new -nodes -x509 -subj "/C={{ssl_country}}/ST={{ssl_state}}/L={{ssl_city}}/O={{ssl_org}}/CN=${ansible_fqdn}" -days 3650 -keyout "{{jupyter_tls_key}}" -out "{{jupyter_tls_cert}}" -extensions v3_ca#
+  args:
+    creates: "{{jupyter_tls_cert}}"
   become: yes
   become_method: sudo
 
 - name: set jupyterhub certificate
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ssl_cert = '/etc/jupyterhub/server.crt'"
+  lineinfile:
+    dest: "{{jupyter_config_file}}"
+    line: "c.JupyterHub.ssl_cert = '{{jupyter_tls_cert}}'"
   when: nossl == False
   become: yes
   become_method: sudo
 
 - name: set jupyterhub certificate
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.ssl_key = '/etc/jupyterhub/server.key'"
+  lineinfile:
+    dest: "{{jupyter_config_file}}"
+    line: "c.JupyterHub.ssl_key = '{{jupyter_tls_key}}'"
   when: nossl == False
   become: yes
   become_method: sudo
 
 - name: remove ssl setting
-  lineinfile: dest=/etc/jupyterhub/jupyterhub_config.py line="c.JupyterHub.confirm_no_ssl = True"
+  lineinfile:
+    dest: "{{jupyter_config_file}}"
+    line: "c.JupyterHub.confirm_no_ssl = True"
   when: nossl == True
   become: yes
   become_method: sudo
@@ -155,4 +174,3 @@
   become: yes
   become_method: sudo
   tags: jupyter
-
