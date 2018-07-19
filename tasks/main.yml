@@ -95,15 +95,20 @@
   become_method: sudo
   tags: jupyter
 
-- name: Check to see if config file exists
-  stat: path=/etc/init.d/jupyterhub
-  register: init_exists
+- name: deploy jupyterhub systemd unit
+  copy:
+    src: jupyterhub.service
+    dest: "/etc/systemd/system/jupyterhub.service"
+    mode: 755
+    owner: root
+    group: root
   become: yes
   become_method: sudo
   tags: jupyter
 
-- name: install jupyterhub init script
-  copy: src=jupyter.init dest=/etc/init.d/jupyterhub mode=755 owner=root group=root
+- name: reload systemd to make new unit available
+  systemd:
+    daemon_reload: yes
   become: yes
   become_method: sudo
   tags: jupyter
