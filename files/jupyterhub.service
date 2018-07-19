@@ -4,7 +4,7 @@ Documentation=https://jupyterhub.readthedocs.io/
 After=network-online.target
 
 [Service]
-User=jupyterhub
+User=jupyter
 ExecStart=/usr/local/bin/jupyterhub --JupyterHub.spawner_class=sudospawner.SudoSpawner
 WorkingDirectory=/etc/jupyterhub
 
