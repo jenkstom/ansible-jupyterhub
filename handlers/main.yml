@@ -1,0 +1,8 @@
+---
+- name: restart jupyterhub
+  service:
+    name: jupyterhub
+    state: restarted
+  become: yes
+  become_method: sudo
+  tags: jupyter

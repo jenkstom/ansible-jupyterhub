@@ -2,7 +2,7 @@
 # file: roles/jupyter/vars/main.yml
 jupyter_pkgs:
   - git
-  - nodejs-legacy
+  - nodejs
   - npm
   - python
   - python-dev
@@ -13,4 +13,3 @@ jupyter_pkgs:
   - python3-setuptools
   - sudo
   - apt-transport-https
-

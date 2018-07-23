@@ -1,0 +1,13 @@
+[Unit]
+Description=Jupyterhub
+Documentation=https://jupyterhub.readthedocs.io/
+After=network-online.target
+
+[Service]
+User=jupyter
+ExecStart=/usr/local/bin/jupyterhub --JupyterHub.spawner_class=sudospawner.SudoSpawner
+WorkingDirectory=/etc/jupyterhub
+Environment="{{jupyter_environment}}"
+
+[Install]
+WantedBy=multi-user.target
