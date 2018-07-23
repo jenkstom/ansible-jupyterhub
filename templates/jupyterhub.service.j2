@@ -7,6 +7,7 @@ After=network-online.target
 User=jupyter
 ExecStart=/usr/local/bin/jupyterhub --JupyterHub.spawner_class=sudospawner.SudoSpawner
 WorkingDirectory=/etc/jupyterhub
+Environment="{{jupyter_environment}}"
 
 [Install]
 WantedBy=multi-user.target

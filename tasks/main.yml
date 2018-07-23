@@ -104,8 +104,8 @@
   tags: jupyter
 
 - name: deploy jupyterhub systemd unit
-  copy:
-    src: jupyterhub.service
+  template:
+    src: jupyterhub.service.j2
     dest: "/etc/systemd/system/jupyterhub.service"
     mode: 755
     owner: root
@@ -167,6 +167,13 @@
     dest: "{{jupyter_config_file}}"
     line: "c.JupyterHub.confirm_no_ssl = True"
   when: nossl == True
+  become: yes
+  become_method: sudo
+
+- name: set additional config
+  blockinfile:
+    dest: "{{jupyter_config_file}}"
+    block: "{{jupyter_additional_config}}"
   become: yes
   become_method: sudo
 
