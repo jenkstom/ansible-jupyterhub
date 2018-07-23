@@ -72,36 +72,42 @@
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: set jupyterhub admin user
   lineinfile: dest="{{jupyter_config_file}}" line="c.Authenticator.admin_users = {'jupyter'}"
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: set jupyterhub create users
   lineinfile: dest="{{jupyter_config_file}}" line="c.LocalAuthenticator.create_system_users = True"
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: set IP address
   lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.hub_ip = '{{jupyter_ipv4_address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: set IP address
   lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.ip = '{{jupyter_ipv4_address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: set IP address
   lineinfile: dest="{{jupyter_config_file}}" line="c.JupyterHub.proxy_api_ip = '{{jupyter_ipv4_address}}'"
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: deploy jupyterhub systemd unit
   template:
@@ -113,6 +119,7 @@
   become: yes
   become_method: sudo
   tags: jupyter
+  notify: restart jupyterhub
 
 - name: reload systemd to make new unit available
   systemd:
@@ -153,6 +160,7 @@
   when: nossl == False
   become: yes
   become_method: sudo
+  notify: restart jupyterhub
 
 - name: set jupyterhub certificate
   lineinfile:
@@ -161,6 +169,7 @@
   when: nossl == False
   become: yes
   become_method: sudo
+  notify: restart jupyterhub
 
 - name: remove ssl setting
   lineinfile:
@@ -169,6 +178,7 @@
   when: nossl == True
   become: yes
   become_method: sudo
+  notify: restart jupyterhub
 
 - name: set additional config
   blockinfile:
@@ -176,6 +186,7 @@
     block: "{{jupyter_additional_config}}"
   become: yes
   become_method: sudo
+  notify: restart jupyterhub
 
 - name: start jupyterhub
   service: name=jupyterhub enabled=yes state=started
